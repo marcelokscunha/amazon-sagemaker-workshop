@@ -4,6 +4,7 @@ from time import strftime, gmtime
 import boto3
 
 import sagemaker
+from sagemaker.xgboost.estimator import XGBoost
 from sagemaker import get_execution_role
 from sagemaker.inputs import TrainingInput
 from sagemaker.debugger import rule_configs, Rule, DebuggerHookConfig
@@ -87,29 +88,36 @@ def get_estimator_from_lab2():
                    "verbosity": 0
                   }
 
-    trial = Trial.create(trial_name=f"algorithm-mode-trial-{create_date()}", 
+    
+    entry_point_script = 'xgboost_customer_churn.py'
+    trial = Trial.create(trial_name=f'framework-mode-trial-{create_date()}', 
                          experiment_name=customer_churn_experiment.experiment_name,
                          sagemaker_boto_client=boto3.client('sagemaker'))
 
-    xgb = sagemaker.estimator.Estimator(image_uri=docker_image_name,
-                                        role=role,
-                                        hyperparameters=hyperparams,
-                                        train_instance_count=1, 
-                                        train_instance_type='ml.m4.xlarge',
-                                        output_path=f's3://{bucket}/{prefix}/output',
-                                        base_job_name='demo-xgboost-customer-churn',
-                                        sagemaker_session=sm_sess)
+    framework_xgb = XGBoost(image_uri=docker_image_name,
+                            entry_point=entry_point_script,
+                            role=role,
+                            framework_version=framework_version,
+                            py_version="py3",
+                            hyperparameters=hyperparams,
+                            instance_count=1, 
+                            instance_type='ml.m4.xlarge',
+                            output_path=f's3://{bucket}/{prefix}/output',
+                            base_job_name='demo-xgboost-customer-churn',
+                            sagemaker_session=sm_sess,
+                            rules=debug_rules
+                            )
 
-    xgb.fit(inputs={
-                      'train': s3_input_train,
-                      'validation': s3_input_validation
-                    },
-            experiment_config={
-                    'ExperimentName': customer_churn_experiment.experiment_name, 
-                    'TrialName': trial.trial_name,
-                    'TrialComponentDisplayName': 'Training',
-            },
-            logs="None"
-           )
+
+    framework_xgb.fit(inputs={
+                          'train': s3_input_train,
+                          'validation': s3_input_validation
+                             },
+                      experiment_config={
+                          'ExperimentName': customer_churn_experiment.experiment_name, 
+                          'TrialName': trial.trial_name,
+                          'TrialComponentDisplayName': 'Training'
+                      }
+                     )
     
     return xgb
