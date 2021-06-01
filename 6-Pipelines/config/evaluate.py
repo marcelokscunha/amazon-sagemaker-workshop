@@ -17,6 +17,16 @@ logger.addHandler(logging.StreamHandler())
 # See https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor-model-quality-metrics.html
 from sklearn.metrics import classification_report, roc_auc_score, accuracy_score
 
+def get_dataset(dir_path, dataset_name) -> pd.DataFrame:
+    files = [ os.path.join(dir_path, file) for file in os.listdir(dir_path) ]
+    if len(files) == 0:
+        raise ValueError(('There are no files in {}.\n' +
+                          'This usually indicates that the channel ({}) was incorrectly specified,\n' +
+                          'the data specification in S3 was incorrectly specified or the role specified\n' +
+                          'does not have permission to access the data.').format(files, dataset_name))
+    raw_data = [ pd.read_csv(file, header=None) for file in files ]
+    df = pd.concat(raw_data)
+    return df
 
 if __name__ == "__main__":
     model_path = "/opt/ml/processing/model/model.tar.gz"
@@ -27,8 +37,8 @@ if __name__ == "__main__":
     model = pickle.load(open("xgboost-model", "rb"))
 
     logger.info("Loading test input data")
-    test_path = "/opt/ml/processing/test/test-dataset.csv"
-    df = pd.read_csv(test_path, header=None)
+    test_path = "/opt/ml/processing/test"
+    df = get_dataset(test_path, "test_set")
 
     logger.debug("Reading test data.")
     y_test = df.iloc[:, 0].to_numpy()
