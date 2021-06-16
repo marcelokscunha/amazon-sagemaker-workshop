@@ -135,4 +135,4 @@ def model_fn(model_dir):
         except Exception as exp_xgb:
             raise ModelLoadInferenceError("Unable to load model: {} {}".format(str(exp_pkl), str(exp_xgb)))
     booster.set_param('nthread', 1)
-    return booster, format
+    return booster

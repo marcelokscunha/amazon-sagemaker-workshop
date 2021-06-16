@@ -1,5 +1,6 @@
 import pprint
 from time import strftime, gmtime
+import os
 
 import boto3
 
@@ -26,7 +27,9 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.CRITICAL)
 
-def get_estimator_from_lab2():
+PATH = os.path.dirname(__file__)
+
+def get_estimator_from_lab2(docker_image_name, framework_version):
     print("Getting solution from Lab 2...")
     print("Please wait 5 minutes for the training job to run.")
     
@@ -65,9 +68,6 @@ def get_estimator_from_lab2():
     role = sagemaker.get_execution_role()
     sm_sess = sagemaker.session.Session()
 
-    framework_version = '1.2-2'
-    docker_image_name = sagemaker.image_uris.retrieve(framework='xgboost', region=region, version=framework_version)
-
     s3_input_train = TrainingInput(s3_data=f's3://{bucket}/{train_dir}', content_type='csv')
     s3_input_validation = TrainingInput(s3_data=f's3://{bucket}/{val_dir}', content_type='csv')
 
@@ -89,11 +89,17 @@ def get_estimator_from_lab2():
                   }
 
     
-    entry_point_script = 'xgboost_customer_churn.py'
+    entry_point_script = f'{PATH}/xgboost_customer_churn.py'
     trial = Trial.create(trial_name=f'framework-mode-trial-{create_date()}', 
                          experiment_name=customer_churn_experiment.experiment_name,
                          sagemaker_boto_client=boto3.client('sagemaker'))
-
+    
+    debug_rules = [
+        Rule.sagemaker(rule_configs.loss_not_decreasing()),
+        Rule.sagemaker(rule_configs.overtraining()),
+        Rule.sagemaker(rule_configs.overfit())
+    ]
+    
     framework_xgb = XGBoost(image_uri=docker_image_name,
                             entry_point=entry_point_script,
                             role=role,
@@ -120,4 +126,4 @@ def get_estimator_from_lab2():
                       }
                      )
     
-    return xgb
+    return framework_xgb
