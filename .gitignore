@@ -1,7 +1,7 @@
 ### JupyterNotebooks ###
 .ipynb_checkpoints
-*/.ipynb_checkpoints/*
-**/.ipynb_checkpoints
+#*/.ipynb_checkpoints/*
+#**/.ipynb_checkpoints
 
 # IPython
 profile_default/
@@ -55,3 +55,19 @@ pythonenv*
 # operating system-related files
 # file properties cache/storage on macOS
 *.DS_Store
+
+# SageMaker
+*.flow
+churn.txt
+1-DataPrep/churn.ipynb
+1-DataPrep/test.csv
+1-DataPrep/train.csv
+1-DataPrep/validation.csv
+2-Modeling/xgboost_customer_churn.py
+3-Evaluation/evaluation.json
+3-Evaluation/model.tar.gz
+3-Evaluation/test.csv
+3-Evaluation/xgboost-model
+3-Evaluation/evaluate.py
+4-Deployment/RealTime/inference.py
+6-Pipelines/my_labs_solutions/*
