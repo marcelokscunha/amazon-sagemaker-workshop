@@ -71,3 +71,4 @@ churn.txt
 3-Evaluation/evaluate.py
 4-Deployment/RealTime/inference.py
 6-Pipelines/my_labs_solutions/*
+1-DataPrep/part-00000*
