@@ -70,5 +70,8 @@ churn.txt
 3-Evaluation/xgboost-model
 3-Evaluation/evaluate.py
 4-Deployment/RealTime/inference.py
-6-Pipelines/my_labs_solutions/*
+4-Deployment/Batch/test.csv
+4-Deployment/Batch/test_batch.csv
+4-Deployment/Batch/model.tar.gz
+6-Pipelines/my_labs_solutions/*.py
 1-DataPrep/part-00000*
