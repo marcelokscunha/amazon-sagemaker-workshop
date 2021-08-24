@@ -5,11 +5,14 @@ import pickle
 import random
 import tempfile
 import urllib.request
+from io import StringIO
+
 
 import xgboost
+import pandas as pd
 from smdebug import SaveConfig
 from smdebug.xgboost import Hook
-
+from sklearn.datasets import load_svmlight_file
 
 def parse_args():
 
@@ -139,11 +142,23 @@ def model_fn(model_dir):
     booster.set_param('nthread', 1)
     return booster
 
-# Perform prediction on the deserialized object, with the loaded model
+
 def predict_fn(input_object, model):
-    
+    """
+    Perform prediction on the deserialized object, with the loaded model.
+    """
     X_test = xgboost.DMatrix(input_object.values)
     predictions_probs = model.predict(X_test)
     predictions = predictions_probs.round()
-
     return {"predictions": predictions}
+
+
+def input_fn(request_body, content_type):
+    """
+    Perform preprocessing task on inference dataset.
+    """
+    if content_type == "text/csv":
+        df = pd.read_csv(StringIO(request_body), header=None)
+        return df
+    else:
+        raise ValueError("{} not supported by script!".format(content_type))

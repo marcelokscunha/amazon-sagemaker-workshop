@@ -97,7 +97,6 @@ def get_estimator_from_lab2(docker_image_name, framework_version):
 
     
     entry_point_script = f'{PATH}/xgboost_customer_churn.py'
-    print("Script path: {}".format(entry_point_script))
     trial = Trial.create(trial_name=f'framework-mode-trial-{create_date()}', 
                          experiment_name=customer_churn_experiment.experiment_name,
                          sagemaker_boto_client=boto3.client('sagemaker'))
